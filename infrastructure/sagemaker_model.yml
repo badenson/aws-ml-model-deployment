@@ -1,0 +1,30 @@
+Resources:
+  MLModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ModelName: iris-classifier
+      PrimaryContainer:
+        Image: "683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:0.23-1-cpu-py3"
+        ModelDataUrl: "s3://your-model-bucket/iris_model/model.joblib"
+      ExecutionRoleArn: !GetAtt SageMakerRole.Arn
+
+  SageMakerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SageMakerAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource: "*"

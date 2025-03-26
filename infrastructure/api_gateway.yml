@@ -1,0 +1,31 @@
+Resources:
+  MLAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ml-model-api
+
+  PredictResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MLAPI
+      ParentId: !GetAtt MLAPI.RootResourceId
+      PathPart: "predict"
+
+  PredictMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MLAPI
+      ResourceId: !Ref PredictResource
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${InferenceLambda.Arn}/invocations"
+      AuthorizationType: NONE
+
+  APIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: PredictMethod
+    Properties:
+      RestApiId: !Ref MLAPI
+      StageName: "prod"
